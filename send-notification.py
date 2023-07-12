@@ -12,11 +12,11 @@ import datetime
 # Set this when user have signed up
 USER_ID = 3
 DISEASES_DICT = {
-    '1': "Tip Burn",
-    '2': "Brown Spots",
-    '3': "Yellowing and Wilting",
-    '4': "Gray White",
-    '5': "Healthy"
+    '0': "Tip Burn",
+    '1': "Brown Spots",
+    '2': "Yellowing and Wilting",
+    '3': "Gray White",
+    '4': "Healthy"
 }
 
 def take_arduino_actions():
@@ -50,33 +50,45 @@ def send_notification(current_dir, result_folder_path,first_line,largest_number)
     print(response.text)
         
 
+def is_folder_empty(folder_path):
+    # Check if the folder exists
+    if not os.path.exists(folder_path):
+        return False
+
+    # Check if the folder is empty
+    return len(os.listdir(folder_path)) == 0
+
 
 def main():
     current_dir = os.getcwd()
     result_folder_path = current_dir+'/test-model'
 
-    # Get a list of all "doc-*.txt" files
-    txt_files = glob.glob('test-model/detection-info-*.txt')
-    print('Files:', txt_files)
+    # Check if the folder is empty
+    if is_folder_empty(result_folder_path):
+        print("The folder is empty.")
+    else:
+        # Get a list of all "doc-*.txt" files
+        txt_files = glob.glob('test-model/detection-info-*.txt')
+        print('Files:', txt_files)
 
 
-    # Extract the number from each filename and find the file with the maximum number
-    latest_file = max(txt_files, key=lambda filename: int(os.path.splitext(os.path.basename(filename))[0].split('-')[2]))
-    print("Latest File: ",latest_file)
-    largest_number = int(os.path.splitext(os.path.basename(latest_file))[0].split('-')[2])
+        # Extract the number from each filename and find the file with the maximum number
+        latest_file = max(txt_files, key=lambda filename: int(os.path.splitext(os.path.basename(filename))[0].split('-')[2]))
+        print("Latest File: ",latest_file)
+        largest_number = int(os.path.splitext(os.path.basename(latest_file))[0].split('-')[2])
 
-    # Read and print the content of the latest file
-    with open(latest_file, 'r') as file:
-        first_line = file.readline().strip().split()
-        print("First Line -> : ",first_line)
+        # Read and print the content of the latest file
+        with open(latest_file, 'r') as file:
+            first_line = file.readline().strip().split()
+            print("First Line -> : ",first_line)
 
-        if(len(first_line) != 0):
-            if(first_line[-1] != '5'):
-                send_notification(current_dir, result_folder_path,first_line,largest_number)
+            if(len(first_line) != 0):
+                if(first_line[-1] != '4'):
+                    send_notification(current_dir, result_folder_path,first_line,largest_number)
+                else:
+                    print("Healthy")
             else:
-                print("Healthy")
-        else:
-            print("File Empty")
+                print("File Empty")
 
 def delete_folder_if_exists(path):
     if os.path.exists(path) and os.path.isdir(path):
