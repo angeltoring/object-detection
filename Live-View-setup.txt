@@ -1,4 +1,5 @@
 To see the live view in app follow the below steps:
+clone the repo in orange pi
 Install obs in orange pi
 
 Stream URL : rtmp://a.rtmp.youtube.com/live2
