@@ -30,7 +30,7 @@ def send_notification(current_dir, result_folder_path,first_line,largest_number)
     url = "https://nft-hydrophonic-delta.vercel.app/image-diseases-upload"
     print('Class ID:', first_line)
     payload = {
-        'diseases_type': DISEASES_DICT[first_line[-1]],
+        'notification_type': DISEASES_DICT[first_line[-1]],
         'user_id': USER_ID
     }
     
