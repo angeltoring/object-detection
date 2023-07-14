@@ -25,7 +25,7 @@ def main():
         '--conf', '0.50',
         '--max-det', '1',
         '--source', '0',
-        '--frame_saved_interval', '14400'
+        '--frame_saved_interval', '13800' #every 3hr 50 min
     ]
 
     result = subprocess.run(command, check=True)

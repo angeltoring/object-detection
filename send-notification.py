@@ -8,9 +8,11 @@ import cv2
 import time
 import glob
 import datetime
+import json
 
 # Set this when user have signed up
 USER_ID = 3
+PLANT_ID = 3
 DISEASES_DICT = {
     '0': "Tip Burn",
     '1': "Brown Spots",
@@ -19,18 +21,31 @@ DISEASES_DICT = {
     '4': "Healthy"
 }
 
-def take_arduino_actions():
-    # write arduino steps here
-    # In progress
-    a=10
+send_codes = {
+    "Tip Burn": "T",
+    "Brown Spots": "B",
+    "Yellowing and Wilting": "Y",
+    "Gray White": "N"
+}
+
+def take_arduino_actions(dis):
+    url = "https://nft-hydrophonic-delta.vercel.app/sent-from-pi"
+    headers = {}
+    payload = {
+        'diseases': dis,
+        'id': USER_ID
+    }
+    response = requests.request("POST", url, headers=headers, data=payload)
+    print(response.text)
 
 
 def send_notification(current_dir, result_folder_path,first_line,largest_number):
 
-    url = "https://nft-hydrophonic-delta.vercel.app/image-diseases-upload"
+    # url = "https://nft-hydrophonic-delta.vercel.app/image-diseases-upload"
+    # url = "http://localhost:3000/image-diseases-upload"
     print('Class ID:', first_line)
     payload = {
-        'diseases_type': DISEASES_DICT[first_line[-1]],
+        'notification_type': DISEASES_DICT[first_line[-1]],
         'user_id': USER_ID
     }
     
@@ -48,7 +63,29 @@ def send_notification(current_dir, result_folder_path,first_line,largest_number)
     response = requests.request("POST", url, headers=headers, data=payload, files=files)
 
     print(response.text)
+
+def set_system_as_safe(isSafe):
+    url = "https://nft-hydrophonic-delta.vercel.app/safe"
+    payload = {
+        'is_safe': isSafe,
+        'plant_id': PLANT_ID
+    }
+    
+    headers = {}
+
+    response = requests.request("POST", url, headers=headers, data=payload)
+
+    print(response.text)
         
+def is_currently_safe():
+    url = f"https://nft-hydrophonic-delta.vercel.app/get-variables/{PLANT_ID}"
+    
+    headers = {}
+
+    response = requests.request("GET", url, headers=headers)
+
+    print("currently safe? : ", json.loads(response.text)['data']['is_system_safe'])
+    return  json.loads(response.text)['data']['is_system_safe']
 
 def is_folder_empty(folder_path):
     # Check if the folder exists
@@ -85,22 +122,27 @@ def main():
             if(len(first_line) != 0):
                 if(first_line[-1] != '4'):
                     send_notification(current_dir, result_folder_path,first_line,largest_number)
+                    if is_currently_safe():
+                        set_system_as_safe(False)
+                        take_arduino_actions(send_codes[DISEASES_DICT[first_line[-1]]])
                 else:
+                    set_system_as_safe(True)
                     print("Healthy")
             else:
                 print("File Empty")
 
-def delete_folder_if_exists(path):
-    if os.path.exists(path) and os.path.isdir(path):
-        try:
-            shutil.rmtree(path)
-            print(f'Successfully deleted the folder: {path}')
-        except Exception as e:
-            print(f'Failed to delete the folder: {path}. Reason: {e}')
-    else:
-        print(f'The folder: {path} does not exist')
+# def delete_folder_if_exists(path):
+#     if os.path.exists(path) and os.path.isdir(path):
+#         try:
+#             shutil.rmtree(path)
+#             print(f'Successfully deleted the folder: {path}')
+#         except Exception as e:
+#             print(f'Failed to delete the folder: {path}. Reason: {e}')
+#     else:
+#         print(f'The folder: {path} does not exist')
 
 
 if __name__ == '__main__':
-    main()
+    # main()
+    is_currently_safe()
     
